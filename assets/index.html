@@ -1,0 +1,724 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music player</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"
+    integrity="sha512-HK5fgLBL+xu6dm/Ii3z4xhlSUyZgTT9tuc/hSrtw6uzJOvgRr2a9jyxxT1ely+B+xFAmJKVSTbpM/CuL7qxO8w=="
+    crossorigin="anonymous" />
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="shortcut icon" href="https://banner2.cleanpng.com/20190419/itt/kisspng-portable-network-graphics-computer-icons-clip-art-ocm-epk-one-church-5cba0363cac613.0848359515556944358306.jpg" type="image/x-icon">
+
+<div class="player">
+    <!-- Dashboard -->
+    <div class="dashboard">
+        <!-- Header -->
+        <header>
+            <h4>Now playing:</h4>
+            <h2>String 57th & 9th</h2>
+        </header>
+
+        <!-- CD -->
+        <div class="cd">
+            <div class="cd-thumb">
+            </div>
+        </div>
+
+        <!-- Control -->
+        <div class="control">
+            <div class="btn btn-repeat">
+                <i class="fas fa-redo"></i>
+            </div>
+            <div class="btn btn-prev">
+                <i class="fas fa-step-backward"></i>
+            </div>
+            <div class="btn btn-toggle-play">
+                <i class="fas fa-pause icon-pause"></i>
+                <i class="fas fa-play icon-play"></i>
+            </div>
+            <div class="btn btn-next">
+                <i class="fas fa-step-forward"></i>
+            </div>
+            <div class="btn btn-random">
+                <i class="fas fa-random"></i>
+            </div>
+        </div>
+
+        <input id="progress" class="progress" type="range" value="0" step="1" min="0" max="100">
+
+        <audio id="audio" src=""></audio>
+    </div>
+
+    <!-- Playlist -->
+    <div class="playlist">
+    </div>
+</div>
+
+<!-- Design from: https://static.collectui.com/shots/3671744/musicloud-revolutionary-app-for-music-streaming-large -->
+<script>
+    // Một số bài hát có thể bị lỗi do liên kết bị hỏng. Vui lòng thay thế liên kết khác để có thể phát
+    // Some songs may be faulty due to broken links. Please replace another link so that it can be played
+
+    const $ = document.querySelector.bind(document);
+    const $$ = document.querySelectorAll.bind(document);
+
+    const PlAYER_STORAGE_KEY = "F8_PLAYER";
+
+    const player = $(".player");
+    const cd = $(".cd");
+    const heading = $("header h2");
+    const cdThumb = $(".cd-thumb");
+    const audio = $("#audio");
+    const playBtn = $(".btn-toggle-play");
+    const progress = $("#progress");
+    const prevBtn = $(".btn-prev");
+    const nextBtn = $(".btn-next");
+    const randomBtn = $(".btn-random");
+    const repeatBtn = $(".btn-repeat");
+    const playlist = $(".playlist");
+
+    const app = {
+        currentIndex: 0,
+        isPlaying: false,
+        isRandom: false,
+        isRepeat: false,
+        config: {},
+        // (1/2) Uncomment the line below to use localStorage
+        // config: JSON.parse(localStorage.getItem(PlAYER_STORAGE_KEY)) || {},
+        songs: [
+            {
+                name: "4 Mùa Thương Em 𝙨𝙥𝙚𝙚𝙙 𝙪𝙥",
+                singer: "LẬP NGUYÊN ft NIGHT T x YẾN NỒI CƠM ĐIỆN ",
+                path: "../assets/music/y2mate.com - 4 Mùa Thương Em 𝙨𝙥𝙚𝙚𝙙 𝙪𝙥  LẬP NGUYÊN ft NIGHT T x YẾN NỒI CƠM ĐIỆN  saigon3107.mp3",
+                image: "./img/maxresdefault.jpg"
+            },
+            {
+                name: "Ba Kiếp Tình Một Kiếp Duyên Lofi Ver",
+                singer: "Lâm Tuấn x MewMew",
+                path: "./music/y2mate.com - Ba Kiếp Tình Một Kiếp Duyên Lofi Ver  Lâm Tuấn x MewMew Lofi  Tiếc thay những năm tháng ân cần.mp3",
+                image:
+                    "https://i.scdn.co/image/ab67616d0000b27386f07487465019a5cc92e6bd"
+            },
+            {
+                name: "Chạy Về Nơi Phía Anh Lofi Ver",
+                singer: "Khắc Việt x Thảo Bebe x Freak D",
+                path:
+                    "./music/y2mate.com - Chạy Về Nơi Phía Anh Lofi Ver  Khắc Việt x Thảo Bebe x Freak D.mp3",
+                image: "./img/chayvephianh.jpg"
+            },
+            {
+                name: "Có Duyên Không Nợ Lofi Ver",
+                singer: "NB3 Hoài Bảo x Freak D",
+                path: "./music/y2mate.com - Có Duyên Không Nợ Lofi Ver  NB3 Hoài Bảo x Freak D.mp3",
+                image:
+                    "https://m.media-amazon.com/images/W/MEDIAX_792452-T2/images/I/412kMBRY39L._UXNaN_FMjpg_QL85_.jpg"
+            },
+            {
+                name: "CÓ MỘT NGƯỜI VẪN ĐỢI ",
+                singer: "VIET LEE  NGÂN NGÂN COVER",
+                path: "./music/y2mate.com - CÓ MỘT NGƯỜI VẪN ĐỢI  VIET LEE  NGÂN NGÂN COVER.mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w600_r1x1_jpeg/cover/5/9/a/b/59abfe20bb7f9e157e5e7b0ae96907ef.jpg"
+            },
+            {
+                name: "Em Ơi Anh Phải Làm Sao Lofi",
+                singer: "Dương Minh Tuấn x DC Tâm x DORI Media",
+                path:
+                    "./music/y2mate.com - Em Ơi Anh Phải Làm Sao Lofi Ver Dương Minh Tuấn x DC Tâm x DORI Media  Có Nỗi Nhớ Không Thành Lời.mp3",
+                image:
+                    "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/95/d8/19/95d8198d-c8e0-8e7e-7473-77db74c31a2b/21656.jpg/1200x1200bf-60.jpg"
+            },
+            {
+                name: "Giá Như Anh Là Người Vô Tâm Lofi",
+                singer: "Hồ Phong An x Will M",
+                path: "./music/y2mate.com - Giá Như Anh Là Người Vô Tâm Lofi Ver  Hồ Phong An x Will M  Cho anh một lý do để anh ra đi.mp3",
+                image:
+                    "https://i.ytimg.com/vi/D1TTgG-nrcU/maxresdefault.jpg"
+            },
+            {
+                name: "Giả Vờ Thương Anh Được Không",
+                singer: "Chu Bin",
+                path:
+                    "./music/y2mate.com - Giả Vờ Thương Anh Được Không  Chu Bin Audio Official.mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w256_r1x1_jpeg/covers/1/f/1fe88bcbff5737304b1df55ef537cd76_1491637103.jpg"
+            },
+            {
+                name: "Hoa Hải Đường",
+                singer: "Jack  J97 x QuanvroxLofi",
+                path:
+                    "./music/y2mate.com - Hoa Hải Đường  Jack  J97 x QuanvroxLofi Ver  Official Lyrics Video.mp3",
+                image:
+                    "https://upload.wikimedia.org/wikipedia/vi/9/9f/Jack_-_Hoa_h%E1%BA%A3i_%C4%91%C6%B0%E1%BB%9Dng.png"
+            },
+            {
+                name: "Hoa Tàn Tình Tan Lofi",
+                singer: " Giang Jolee",
+                path:
+                    "./music/y2mate.com - Hoa Tàn Tình Tan Lofi Ver  Giang Jolee  Hoa Trên Giấy Không Sương Hoa Vẫn Nở.mp3",
+                image:
+                    "https://i1.sndcdn.com/artworks-3I2aXvVcymoc-0-t500x500.jpg"
+            },
+            {
+                name: "Hôm Nay Em Cưới Rồi",
+                singer: " Khải Đăng x Freak D",
+                path:
+                    "./music/y2mate.com - Hôm Nay Em Cưới Rồi Lofi Ver  Khải Đăng x Freak D.mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w600_r1x1_jpeg/cover/0/5/6/6/056652306efa257560bcf64b30f756a3.jpg"
+            },
+            {
+                name: "KHỞI MY  MƯA RƠI VÀO PHÒNG",
+                singer: "tngie speed up",
+                path:
+                    "./music/y2mate.com - KHỞI MY  MƯA RƠI VÀO PHÒNG  tngie speed up  Bầu trời ấy nơi xa thế nào rồi.mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w256_r1x1_jpeg/covers/e/e/ee4337c1a8831c90c2d8966d4fee21dd_1464082503.jpg"
+            },
+            {
+                name: "LỆ LƯU LY  NH4T Remix",
+                singer: "VŨ PHỤNG TIÊN X DT TẬP RAP X DRUM7",
+                path:
+                    "./music/y2mate.com - LỆ LƯU LY  NH4T Remix   VŨ PHỤNG TIÊN X DT TẬP RAP X DRUM7  Audio Lyrics Video.mp3",
+                image: "./img/leluuly.jpg"
+            },
+            {
+                name: "Lý Do Là Gì Lofi",
+                singer: "Thái Học x Ryan",
+                path:
+                    "./music/y2mate.com - Lục tìm những kí ức anh thấy lòng mình nghẹn ngàoLý Do Là Gì Lofi Ver  Thái Học x Ryan Music.mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w256_r1x1_jpeg/cover/f/c/6/1/fc618bd35ccd86cad8bdf1f95ef3a6b9.jpg"
+            },
+            {
+                name: "卜卦  崔子格",
+                singer: "Khắc Tư",
+                path:
+                    "./music/y2mate.com - MV  VietsubNgày Hạnh Phúc卜卦  崔子格  Quẻ Bói  Thôi Tử CáchNhạc Hoa Cực Hay Cáp Ny Khắc Tư.mp3",
+                image:
+                    "https://i.kfs.io/album/global/111155273,0v1/fit/500x500.jpg"
+            },
+            {
+                name: "Tiếng Pháo Tiễn Người Lofi",
+                singer: " Hùng Quân x Bụi",
+                path:
+                    "./music/y2mate.com - Ngày Em Biết Nhớ Thương Một Người  Tiếng Pháo Tiễn Người Lofi  Hùng Quân x Bụi Chill.mp3",
+                image:
+                    "data:image/jpeg;base64,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"
+            },
+            {
+                name: "Ngỡ Như Giấc Mơ ",
+                singer: "Chu Duyên Cover x Liam",
+                path:
+                    "./music/y2mate.com - Ngỡ Như Giấc Mơ  Chu Duyên Cover x Liam Lofi Ver  Hạnh phúc nhỏ bé vỡ nát tan vào bóng đêm.mp3",
+                image:
+                    "https://i.ytimg.com/vi/aP6z5tmnaM4/maxresdefault.jpg"
+            },
+            {
+                name: "Như Anh Đã Thấy Em  ",
+                singer: "PHUCXP",
+                path:
+                    "./music/y2mate.com - Như Anh Đã Thấy Em  PHUCXP  speed up.mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w600_r1x1_jpeg/cover/0/f/b/3/0fb3ab6b2dd74fa6b7741ece6d47c29d.jpg"
+            },
+            {
+                name: "Như Anh Đã Thấy Em CTTDE2 ",
+                singer: " PhucXp ft Freak D",
+                path:
+                    "./music/y2mate.com - Như Anh Đã Thấy Em CTTDE2  PhucXp ft Freak D.mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w600_r1x1_jpeg/cover/0/f/b/3/0fb3ab6b2dd74fa6b7741ece6d47c29d.jpg"
+            },
+            {
+                name: "Nhất Trên Đời Lofi ",
+                singer: " VAnh x Freak D",
+                path:
+                    "./music/y2mate.com - Nhất Trên Đời Lofi Ver  VAnh x Freak D.mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w600_r1x1_jpeg/cover/a/2/1/7/a2173ca450b64a535be2fdacaea96e31.jpg"
+            },
+            {
+                name: "Nếu Em Còn Tồn Tại",
+                singer: "Trịnh Đình Quang",
+                path:
+                    "./music/y2mate.com - Nếu Em Còn Tồn Tại  Trịnh Đình Quang  LyRics.mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w600_r1x1_jpeg/avatars/8/5/85b4710d31d2806e237269c1063f7358_1462333009.jpg"
+            },
+            {
+                name: "Quên Người Đã Quá Yêu Lofi",
+                singer: "Hà Duy Thái x Freak D x DC Tâm",
+                path:
+                    "./music/y2mate.com - Quên Người Đã Quá Yêu Lofi Ver  Hà Duy Thái x Freak D x DC Tâm.mp3",
+                image:
+                    "https://i.scdn.co/image/ab67616d0000b2737e06a08b232fd5e6f4cb59e0"
+            },
+            {
+                name: "Ai Đợi Mình Được Mãi Lofi",
+                singer: "Thanh Hưng x Vux",
+                path:
+                    "./music/y2mate.com - rồi người đó sẽ yêu em thương em và gần em hơnAi Đợi Mình Được Mãi Lofi Ver  Thanh Hưng x Vux.mp3",
+                image:
+                    "https://avatar-ex-swe.nixcdn.com/song/2023/03/17/f/2/3/6/1679047194164_640.jpg"
+            },
+            {
+                name: "Speed up Khuôn mặt đáng thương ",
+                singer: "Sơn Tùng MTP",
+                path:
+                    "./music/y2mate.com - Speed up Khuôn mặt đáng thương  Sơn Tùng MTP.mp3",
+                image:
+                    "https://i.ytimg.com/vi/1dmd2JeWqfY/maxresdefault.jpg"
+            },
+            {
+                name: "Sự Thật Đã Bỏ Quên Lofi",
+                singer: "Hà Duy Thái x Orinn",
+                path:
+                    "./music/y2mate.com - Sự Thật Đã Bỏ Quên Lofi  Hà Duy Thái x Orinn  Giờ mình anh nơi đây ôm nỗi nhớ em.mp3",
+                image:
+                    "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/18/ac/e5/18ace586-dd10-a4bf-4abf-0fb9e74062c2/a6dee664-c764-4c3b-932f-e23b5fd8d62f.jpg/1200x1200bf-60.jpg"
+            },
+            {
+                name: "Thay Tôi Yêu Cô Ấy",
+                singer: "Thanh Hưng",
+                path:
+                    "./music/y2mate.com - Thay Tôi Yêu Cô Ấy ĐNSTĐ  Thanh Hưng  Official Lyrics Video.mp3",
+                image:
+                    "https://i1.sndcdn.com/artworks-000620882203-r51bnf-t500x500.jpg"
+            },
+            {
+                name: "Thuyền Quyên Lofi",
+                singer: "Diệu Kiên x CaoTri",
+                path:
+                    "./music/y2mate.com - Thuyền Quyên Lofi Ver  Diệu Kiên x CaoTri.mp3",
+                image:
+                    "https://i.scdn.co/image/ab67616d0000b273b311b35a89ba643e57ba68ac"
+            },
+            {
+                name: "Tình Yêu Màu Hồng Lofi",
+                singer: "Hồ Văn Quý x Xám x Freak D",
+                path:
+                    "./music/y2mate.com - Tình Yêu Màu Hồng Lofi Ver  Hồ Văn Quý x Xám x Freak D.mp3",
+                image:
+                    "https://i1.sndcdn.com/artworks-4SlAtzbfixJiWc2K-SsF7aw-t500x500.jpg"
+            },
+            {
+                name: "TỪNG THƯƠNG Lofi",
+                singer: "Phan Duy Anh x VUX",
+                path:
+                    "./music/y2mate.com - TỪNG THƯƠNG Lofi Ver  Phan Duy Anh x VUX  Vì quá yêu em nên anh mang hết duyên mình đánh đổi_320kbps.mp3",
+                image:
+                    "https://p16-tm-sg.tiktokmusic.me/img/tos-alisg-v-2102/615c40cde7ff4a3ea4abe1750ed54872~c5_500x500.jpg"
+            },
+            {
+                name: "VÔ CÙNG ",
+                singer: "Phan Duy Anh",
+                path:
+                    "./music/y2mate.com - VÔ CÙNG  Vì Anh Thương Em   Phan Duy Anh  MV Audio Lyric .mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w600_r1x1_jpeg/cover/7/f/1/c/7f1c0611c731eea322b0c3f9291df3ac.jpg"
+            },
+            {
+                name: "Người Đã Yêu Ai",
+                singer: "[Nightcore]",
+                path:
+                    "./music//y2meta.com - [Nightcore] - Người Đã Yêu Ai - Remix (128 kbps).mp3",
+                image:
+                    "https://dt.muvi.vn/mvn/thumbnails/song/2019/10/27/chaukhaiphongthump_20191027093727.jpg?w=225&h=225"
+            },
+            {
+                name: "Biết Đau Nhưng Vẫn Yêu",
+                singer: "Hồ Gia Khánh",
+                path:
+                    "./music/y2meta.com - Biết Đau Nhưng Vẫn Yêu - Hồ Gia Khánh (Uchiha Remix) _ Nhạc Vinahouse Gây Nghiện Tik Tok Hiện Nay (128 kbps).mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w240_r1x1_jpeg/covers/0/5/054caa1cc8a6958155dbe9a6fe9d4318_1513826956.jpg"
+            },
+            {
+                name: "Chạm Khẽ Tim Anh Một Chút Thôi",
+                singer: "Noo Phước Thịnh",
+                path:
+                    "./music/y2meta.com - Chạm Khẽ Tim Anh Một Chút Thôi _ Noo Phước Thịnh _ LYRIC VIDEO (128 kbps).mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w256_r1x1_jpeg/covers/6/e/6e7b90d96728c9ce1b4c2a104d622784_1507799020.jpg"
+            },
+            {
+                name: "Lời Anh Chưa Thể Nói (𝙨𝙥𝙚𝙚𝙙 𝙪𝙥)",
+                singer: "Chuuby",
+                path:
+                    "./music/y2meta.com - Chờ Đợi Bao Lâu Anh Không Nói Ra... Lời Anh Chưa Thể Nói (𝙨𝙥𝙚𝙚𝙙 𝙪𝙥) - Chuuby (128 kbps).mp3",
+                image:
+                    "https://i.ytimg.com/vi/RL6cEe4tbVk/maxresdefault.jpg"
+            },
+            {
+                name: "À Lôi",
+                singer: "Double2T x Masew",
+                path:
+                    "./music/y2meta.com - Double2T x Masew - À Lôi  _ Official Lyric Video @Masewprod @Double2TOfficial (128 kbps).mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w600_r1x1_jpeg/cover/6/d/9/6/6d961b2a82f151a0f9af7de928e8f809.jpg"
+            },
+            {
+                name: "Em Là Chân Ái Của Đời Anh ( Lofi Ver. )",
+                singer: "Duy Tuyên x Whisky",
+                path:
+                    "./music/y2meta.com - Em Là Chân Ái Của Đời Anh ( Lofi Ver. ) - Duy Tuyên x Whisky _ MV Lyric Official (128 kbps).mp3",
+                image:
+                    "https://i1.sndcdn.com/artworks-sGOMORFb56SP-0-t500x500.jpg"
+            },
+            {
+                name: " Em Vẫn Chưa Về Remix",
+                singer: "Đình Phong",
+                path:
+                    "./music/y2meta.com - Em Vẫn Chưa Về Remix - Đình Phong _ Nhạc Remix Hay Nhất 2019 (128 kbps).mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w600_r1x1_jpeg/cover/6/c/2/1/6c212cefc74b277e331dce030313b8dc.jpg"
+            },
+            {
+                name: "EM LÀ CHÂN ÁI CỦA ĐỜI ANH REMIX",
+                singer: "HAKY REMIX x DUY TUYÊN",
+                path:
+                    "./music/y2meta.com - EM LÀ CHÂN ÁI CỦA ĐỜI ANH REMIX - HAKY REMIX x DUY TUYÊN _ HOT TIKTOK 2023 (128 kbps).mp3",
+                image:
+                    "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/c6/a3/df/c6a3dfff-52a8-895b-a375-dc590e9738c1/839d0dc3-41a0-4f44-9867-2ff4c4f52277.jpg/400x400cc.jpg"
+            },
+            {
+                name: "Hoa Tàn Tình Tan Remix",
+                singer: " Giang Jolee",
+                path:
+                    "./music/y2meta.com - Hoa Trên Giấy Không Sương Hoa Vẫn Nở Hot TikTok _ Hoa Tàn Tình Tan Remix - Giang Jolee (128 kbps).mp3",
+                image:
+                    "https://avatar-ex-swe.nixcdn.com/song/2022/04/29/e/9/a/5/1651205535332_640.jpg"
+            },
+            {
+                name: "HUYỀN VI",
+                singer: "MASEW",
+                path:
+                    "./music/y2meta.com - HUYỀN VI - MASEW _ OFFICIAL MUSIC VIDEO (128 kbps).mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w256_r1x1_jpeg/cover/8/c/c/0/8cc0c3cb083abceb31df735871ac5664.jpg"
+            },
+            {
+                name: "Một Bước Yêu Vạn Dặm Đau",
+                singer: "Mr Siro",
+                path:
+                    "./music/y2meta.com - Một Bước Yêu Vạn Dặm Đau - Mr Siro, Lyrics (128 kbps).mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w600_r1x1_jpeg/cover/4/d/6/2/4d62b014dddf2702af85e1d14d5c0a0b.jpg"
+            },
+            {
+                name: "Xuân Hạ Thu Đông",
+                singer: "Phương Thanh",
+                path:
+                    "./music/y2meta.com - Phương Thanh - Xuân Hạ Thu Đông 39 (Lofi Ver.) _ Lyrics Video _ Nhắm Mắt Lại Lòng Ta Vẫn Yêu Vô Vàn (128 kbps).mp3",
+                image:
+                    "https://vnkings.com/wp-content/uploads/2022/04/tranh-bon-mua-dep.jpg"
+            },
+            {
+                name: "Rượu Mừng Hóa Người Dưng (H2O Remix)",
+                singer: "TLong ",
+                path:
+                    "./music/y2meta.com - Rượu Mừng Hóa Người Dưng (H2O Remix) - TLong _ Anh Biết Bây Giờ Đôi Ta Chẳng Là Gì Của Nhau Remix (128 kbps).mp3",
+                image:
+                    "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/d1/30/3c/d1303cc8-4ca5-f96f-ec89-1b8445c80366/bd3c8919-93f9-4f66-b365-6d410197cc1e.jpg/1200x1200bf-60.jpg"
+            },
+            {
+                name: "TRÊN TÌNH BẠN DƯỚI TÌNH YÊU (lofi)",
+                singer: "Cover _ lofi-K",
+                path:
+                    "./music/y2meta.com - TRÊN TÌNH BẠN DƯỚI TÌNH YÊU (lofi) _ Cover _ lofi-K (128 kbps).mp3",
+                image:
+                    "https://p16-tm-sg.tiktokmusic.me/img/tos-alisg-v-2102/493ec10dc4ff41c1afc1f5e77c85f830~c5_1000x1000.jpg"
+            },
+            {
+                name: "TỪNG THƯƠNG REMIX",
+                singer: "Phan Duy Anh ft DJ Trang Moon",
+                path:
+                    "./music/y2meta.com - TỪNG THƯƠNG REMIX _ Phan Duy Anh ft DJ Trang Moon _ Vì quá yêu em nên anh mang hết duyên mình... (128 kbps).mp3",
+                image:
+                    "https://i.ytimg.com/vi/bajY1LZD0go/maxresdefault.jpg"
+            },
+            {
+                name: "Yêu Một Người Gian Dối Remix",
+                singer: "Như Việt x DJ Trang Moon",
+                path:
+                    "./music/y2meta.com - Yêu Một Người Gian Dối Remix _ Như Việt x DJ Trang Moon _ Có một người từng yêu em hơn chính mình... (128 kbps).mp3",
+                image:
+                    "https://avatar-ex-swe.nixcdn.com/song/2023/03/25/6/3/c/0/1679752431834_640.jpg"
+            },
+            {
+                name: "Áng Mây Vô Tình (Qinn Remix)",
+                singer: "Lương Gia Hùng",
+                path:
+                    "./music/y2meta.com - Áng Mây Vô Tình (Qinn Remix) - Lương Gia Hùng _ ♫ Đã Có Bao Giờ Trong Tim Em Tồn Tại Anh Chưa Remix (128 kbps).mp3",
+                image:
+                    "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/dd/b9/17/ddb91732-132f-4d9f-5911-30cc7002cf2d/be34f75e-a67b-4e93-85b9-aa655e31fefa.jpg/600x600bf-60.jpg"
+            },
+            {
+                name: "Đến Sau Một Người Remix",
+                singer: " Phạm kỳ anh",
+                path:
+                    "./music/y2meta.com - Đến Sau Một Người Remix remix 2019 Ca sỹ Phạm kỳ anh (128 kbps).mp3",
+                image:
+                    "https://photo-resize-zmp3.zmdcdn.me/w600_r1x1_jpeg/cover/f/b/e/c/fbec5c01c0c2d03fdd12321881f3287e.jpg"
+            },
+            {
+                name: "Ước Nguyện Đầu Xuân Remix",
+                singer: "Vân Như x Đại Mèo Remix",
+                path:
+                    "./music/y2meta.com - Ước Nguyện Đầu Xuân Remix - Vân Như x Đại Mèo Remix _ Nhạc Tết Xuân Remix Hay Nhất 2022 (128 kbps).mp3",
+                image:
+                    "https://i.scdn.co/image/ab67616d0000b27302f3445d2d948adb6c64d5b0"
+            },
+            {
+                name: "Lofi Lyrics_Ai Chung Tình Được mãi",
+                singer: "Đinh Tùng Huy x meChill",
+                path:
+                    "./music/y2meta.com - ♬ Lofi Lyrics_Ai Chung Tình Được mãi - Đinh Tùng Huy x meChill _ Kho Nhạc Lofi Chill Nhất TikTok (128 kbps).mp3",
+                image:
+                    "https://i1.sndcdn.com/artworks-AFtSmTR2UrTlnmY2-6Pjfyg-t500x500.jpg"
+            }
+
+
+        ],
+        setConfig: function (key, value) {
+            this.config[key] = value;
+            // (2/2) Uncomment the line below to use localStorage
+            // localStorage.setItem(PlAYER_STORAGE_KEY, JSON.stringify(this.config));
+        },
+        render: function () {
+            const htmls = this.songs.map((song, index) => {
+                return `
+                        <div class="song ${index === this.currentIndex ? "active" : ""
+                    }" data-index="${index}">
+                            <div class="thumb"
+                                style="background-image: url('${song.image}')">
+                            </div>
+                            <div class="body">
+                                <h3 class="title">${song.name}</h3>
+                                <p class="author">${song.singer}</p>
+                            </div>
+                            <div class="option">
+                                <i class="fas fa-ellipsis-h"></i>
+                            </div>
+                        </div>
+                    `;
+            });
+            playlist.innerHTML = htmls.join("");
+        },
+        defineProperties: function () {
+            Object.defineProperty(this, "currentSong", {
+                get: function () {
+                    return this.songs[this.currentIndex];
+                }
+            });
+        },
+        handleEvents: function () {
+            const _this = this;
+            const cdWidth = cd.offsetWidth;
+
+            // Xử lý CD quay / dừng
+            // Handle CD spins / stops
+            const cdThumbAnimate = cdThumb.animate([{ transform: "rotate(360deg)" }], {
+                duration: 10000, // 10 seconds
+                iterations: Infinity
+            });
+            cdThumbAnimate.pause();
+
+            // Xử lý phóng to / thu nhỏ CD
+            // Handles CD enlargement / reduction
+            document.onscroll = function () {
+                const scrollTop = window.scrollY || document.documentElement.scrollTop;
+                const newCdWidth = cdWidth - scrollTop;
+
+                cd.style.width = newCdWidth > 0 ? newCdWidth + "px" : 0;
+                cd.style.opacity = newCdWidth / cdWidth;
+            };
+
+            // Xử lý khi click play
+            // Handle when click play
+            playBtn.onclick = function () {
+                if (_this.isPlaying) {
+                    audio.pause();
+                } else {
+                    audio.play();
+                }
+            };
+
+            // Khi song được play
+            // When the song is played
+            audio.onplay = function () {
+                _this.isPlaying = true;
+                player.classList.add("playing");
+                cdThumbAnimate.play();
+            };
+
+            // Khi song bị pause
+            // When the song is pause
+            audio.onpause = function () {
+                _this.isPlaying = false;
+                player.classList.remove("playing");
+                cdThumbAnimate.pause();
+            };
+
+            // Khi tiến độ bài hát thay đổi
+            // When the song progress changes
+            audio.ontimeupdate = function () {
+                if (audio.duration) {
+                    const progressPercent = Math.floor(
+                        (audio.currentTime / audio.duration) * 100
+                    );
+                    progress.value = progressPercent;
+                }
+            };
+
+            // Xử lý khi tua song
+            // Handling when seek
+            progress.onchange = function (e) {
+                const seekTime = (audio.duration / 100) * e.target.value;
+                audio.currentTime = seekTime;
+            };
+
+            // Khi next song
+            // When next song
+            nextBtn.onclick = function () {
+                if (_this.isRandom) {
+                    _this.playRandomSong();
+                } else {
+                    _this.nextSong();
+                }
+                audio.play();
+                _this.render();
+                _this.scrollToActiveSong();
+            };
+
+            // Khi prev song
+            // When prev song
+            prevBtn.onclick = function () {
+                if (_this.isRandom) {
+                    _this.playRandomSong();
+                } else {
+                    _this.prevSong();
+                }
+                audio.play();
+                _this.render();
+                _this.scrollToActiveSong();
+            };
+
+            // Xử lý bật / tắt random song
+            // Handling on / off random song
+            randomBtn.onclick = function (e) {
+                _this.isRandom = !_this.isRandom;
+                _this.setConfig("isRandom", _this.isRandom);
+                randomBtn.classList.toggle("active", _this.isRandom);
+            };
+
+            // Xử lý lặp lại một song
+            // Single-parallel repeat processing
+            repeatBtn.onclick = function (e) {
+                _this.isRepeat = !_this.isRepeat;
+                _this.setConfig("isRepeat", _this.isRepeat);
+                repeatBtn.classList.toggle("active", _this.isRepeat);
+            };
+
+            // Xử lý next song khi audio ended
+            // Handle next song when audio ended
+            audio.onended = function () {
+                if (_this.isRepeat) {
+                    audio.play();
+                } else {
+                    nextBtn.click();
+                }
+            };
+
+            // Lắng nghe hành vi click vào playlist
+            // Listen to playlist clicks
+            playlist.onclick = function (e) {
+                const songNode = e.target.closest(".song:not(.active)");
+
+                if (songNode || e.target.closest(".option")) {
+                    // Xử lý khi click vào song
+                    // Handle when clicking on the song
+                    if (songNode) {
+                        _this.currentIndex = Number(songNode.dataset.index);
+                        _this.loadCurrentSong();
+                        _this.render();
+                        audio.play();
+                    }
+
+                    // Xử lý khi click vào song option
+                    // Handle when clicking on the song option
+                    if (e.target.closest(".option")) {
+                    }
+                }
+            };
+        },
+        scrollToActiveSong: function () {
+            setTimeout(() => {
+                $(".song.active").scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest"
+                });
+            }, 300);
+        },
+        loadCurrentSong: function () {
+            heading.textContent = this.currentSong.name;
+            cdThumb.style.backgroundImage = `url('${this.currentSong.image}')`;
+            audio.src = this.currentSong.path;
+        },
+        loadConfig: function () {
+            this.isRandom = this.config.isRandom;
+            this.isRepeat = this.config.isRepeat;
+        },
+        nextSong: function () {
+            this.currentIndex++;
+            if (this.currentIndex >= this.songs.length) {
+                this.currentIndex = 0;
+            }
+            this.loadCurrentSong();
+        },
+        prevSong: function () {
+            this.currentIndex--;
+            if (this.currentIndex < 0) {
+                this.currentIndex = this.songs.length - 1;
+            }
+            this.loadCurrentSong();
+        },
+        playRandomSong: function () {
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * this.songs.length);
+            } while (newIndex === this.currentIndex);
+
+            this.currentIndex = newIndex;
+            this.loadCurrentSong();
+        },
+        start: function () {
+            // Gán cấu hình từ config vào ứng dụng
+            // Assign configuration from config to application
+            this.loadConfig();
+
+            // Định nghĩa các thuộc tính cho object
+            // Defines properties for the object
+            this.defineProperties();
+
+            // Lắng nghe / xử lý các sự kiện (DOM events)
+            // Listening / handling events (DOM events)
+            this.handleEvents();
+
+            // Tải thông tin bài hát đầu tiên vào UI khi chạy ứng dụng
+            // Load the first song information into the UI when running the app
+            this.loadCurrentSong();
+
+            // Render playlist
+            this.render();
+
+            // Hiển thị trạng thái ban đầu của button repeat & random
+            // Display the initial state of the repeat & random button
+            randomBtn.classList.toggle("active", this.isRandom);
+            repeatBtn.classList.toggle("active", this.isRepeat);
+        }
+    };
+
+    app.start();
+
+</script>
